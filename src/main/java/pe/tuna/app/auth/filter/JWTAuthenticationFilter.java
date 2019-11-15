@@ -21,6 +21,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.security.Key;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     // Creamos el atributo encarhado de realizar la autenticacion por detras, encargado de realizar el login
     private AuthenticationManager authenticationManager;
+    public static final Key SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
     public JWTAuthenticationFilter(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
@@ -74,7 +76,8 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult)
+            throws IOException, ServletException {
 
         String username = ((User) authResult.getPrincipal()).getUsername();
 
@@ -83,11 +86,10 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         Claims claims = Jwts.claims();
         claims.put("authorities", new ObjectMapper().writeValueAsString(roles));
 
-        SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
         String token = Jwts.builder()
                 .setClaims(claims)
                 .setSubject(username)
-                .signWith(secretKey)
+                .signWith(SECRET_KEY)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 3600000))
                 .compact();
@@ -106,7 +108,8 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     }
 
     @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed)
+            throws IOException, ServletException {
 
         Map<String, Object> body = new HashMap<String, Object>();
         body.put("mensaje", "Error de autenticacion, usuario o contraseña incorrectos");

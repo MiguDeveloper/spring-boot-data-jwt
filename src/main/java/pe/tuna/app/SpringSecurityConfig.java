@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import pe.tuna.app.auth.filter.JWTAuthenticationFilter;
+import pe.tuna.app.auth.filter.JWTAuthorizationFilter;
 import pe.tuna.app.auth.handler.LoginSuccesHandler;
 import pe.tuna.app.models.services.JpaUserDetailsService;
 
@@ -55,6 +56,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                     .exceptionHandling().accessDeniedPage("/error_403")*/
                 .and()
                 .addFilter(new JWTAuthenticationFilter(authenticationManager()))
+                .addFilter(new JWTAuthorizationFilter(authenticationManager()))
                     .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
