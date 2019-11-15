@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import pe.tuna.app.auth.filter.JWTAuthenticationFilter;
 import pe.tuna.app.auth.filter.JWTAuthorizationFilter;
 import pe.tuna.app.auth.handler.LoginSuccesHandler;
+import pe.tuna.app.auth.service.IJWTService;
 import pe.tuna.app.models.services.JpaUserDetailsService;
 
 import javax.sql.DataSource;
@@ -33,6 +34,10 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private JpaUserDetailsService userDetailsService;
+
+    // Inyectamos el JWTService que tiene todos los metodos
+    @Autowired
+    private IJWTService ijwtService;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -55,8 +60,8 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                     .exceptionHandling().accessDeniedPage("/error_403")*/
                 .and()
-                .addFilter(new JWTAuthenticationFilter(authenticationManager()))
-                .addFilter(new JWTAuthorizationFilter(authenticationManager()))
+                .addFilter(new JWTAuthenticationFilter(authenticationManager(), ijwtService))
+                .addFilter(new JWTAuthorizationFilter(authenticationManager(), ijwtService))
                     .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
